@@ -29,6 +29,47 @@ describe('chatbotBrain Context Management', () => {
         expect(context.lastIntent).toBeNull();
         expect(context.turnCount).toBe(0);
     });
+
+    it('does not update lastDomain if domain is falsy', () => {
+        updateContext('Data Science', 'course_recommendation');
+        updateContext(null, 'project_suggestion');
+        const context = getContext();
+        expect(context.lastDomain).toBe('Data Science');
+        expect(context.lastIntent).toBe('project_suggestion');
+        expect(context.turnCount).toBe(2);
+    });
+
+    it('does not update lastIntent if intent is general or greeting', () => {
+        updateContext('Backend Developer', 'skill_inquiry');
+
+        updateContext('Frontend Developer', 'general');
+        let context = getContext();
+        expect(context.lastDomain).toBe('Frontend Developer');
+        expect(context.lastIntent).toBe('skill_inquiry');
+        expect(context.turnCount).toBe(2);
+
+        updateContext('UI/UX Designer', 'greeting');
+        context = getContext();
+        expect(context.lastDomain).toBe('UI/UX Designer');
+        expect(context.lastIntent).toBe('skill_inquiry');
+        expect(context.turnCount).toBe(3);
+    });
+
+    it('does not update lastIntent if intent is falsy', () => {
+        updateContext('AI/ML Engineer', 'roadmap');
+        updateContext('Cloud Engineer', null);
+        const context = getContext();
+        expect(context.lastDomain).toBe('Cloud Engineer');
+        expect(context.lastIntent).toBe('roadmap');
+        expect(context.turnCount).toBe(2);
+    });
+
+    it('increments turnCount on every call regardless of parameters', () => {
+        updateContext(null, null);
+        updateContext(undefined, undefined);
+        const context = getContext();
+        expect(context.turnCount).toBe(2);
+    });
 });
 
 describe('chatbotBrain extractDomain', () => {
