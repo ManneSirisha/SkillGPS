@@ -183,22 +183,26 @@ export const getProjectRecommendations = (matchResult, userSkills, careerName) =
 
     const { essentialMatchPercentage, essentialMissing } = matchResult;
     const normalizedUserSkills = userSkills.map(s => s.toLowerCase());
+    const userSkillsSet = new Set(normalizedUserSkills);
 
     // Score projects based on skill alignment
     const scoreProject = (project) => {
         const projectSkills = project.skills.map(s => s.toLowerCase());
-        const matchedProjectSkills = projectSkills.filter(skill =>
-            normalizedUserSkills.some(userSkill =>
-                userSkill.includes(skill) || skill.includes(userSkill)
-            )
-        );
 
-        // Skills user will learn from this project
-        const skillsToLearn = projectSkills.filter(skill =>
-            !normalizedUserSkills.some(userSkill =>
+        const matchedProjectSkills = [];
+        const skillsToLearn = [];
+
+        projectSkills.forEach(skill => {
+            const hasMatch = userSkillsSet.has(skill) || normalizedUserSkills.some(userSkill =>
                 userSkill.includes(skill) || skill.includes(userSkill)
-            )
-        );
+            );
+
+            if (hasMatch) {
+                matchedProjectSkills.push(skill);
+            } else {
+                skillsToLearn.push(skill);
+            }
+        });
 
         // Check if project helps with missing essential skills
         const helpsWithEssentialSkills = essentialMissing.some(missing =>
