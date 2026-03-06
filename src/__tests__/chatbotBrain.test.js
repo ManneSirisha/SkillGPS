@@ -29,6 +29,27 @@ describe('chatbotBrain Context Management', () => {
         expect(context.lastIntent).toBeNull();
         expect(context.turnCount).toBe(0);
     });
+
+    it('returns a copy of the context, preventing unintended mutations', () => {
+        updateContext('Data Science', 'course_recommendation');
+        const context1 = getContext();
+
+        // Mutate the returned copy
+        context1.lastDomain = 'Hacked';
+        context1.lastIntent = 'Hacked';
+        context1.turnCount = 999;
+
+        // Fetch again, ensure internal state is untouched
+        const context2 = getContext();
+        expect(context2.lastDomain).toBe('Data Science');
+        expect(context2.lastIntent).toBe('course_recommendation');
+        expect(context2.turnCount).toBe(1);
+
+        // Arrays are copied by reference in shallow copy, check if lastMessages mutates.
+        // Note: The getter does `{ ...conversationContext }` which is a shallow copy,
+        // so modifying the array itself (`context1.lastMessages.push`) would mutate the
+        // original. We're testing that property reassignment is prevented.
+    });
 });
 
 describe('chatbotBrain extractDomain', () => {
