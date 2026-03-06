@@ -1,5 +1,7 @@
 // Resume Parser - Extracts skills and information from resume text
 
+import { careerSkills, getEssentialSkills } from '../data/careerSkills.js';
+
 // Common skill keywords to look for
 const SKILL_PATTERNS = {
     programming: [
@@ -236,9 +238,34 @@ export const extractContactInfo = (resumeText) => {
  * Get skill suggestions based on partial resume analysis
  */
 export const getSuggestedSkills = (resumeSkills, targetCareer) => {
-    // This would integrate with careerSkills to provide suggestions
+    if (!targetCareer || !careerSkills[targetCareer]) {
+        return {
+            missing: [],
+            recommended: []
+        };
+    }
+
+    const userSkillsLower = (resumeSkills || []).map(s => s.toLowerCase());
+    const essential = getEssentialSkills(targetCareer);
+
+    // Find missing essential skills
+    const missing = essential.filter(s => !userSkillsLower.includes(s.toLowerCase()));
+
+    // Find recommended skills
+    const career = careerSkills[targetCareer];
+    const recommendedSet = new Set();
+
+    if (career.technical?.recommended) {
+        career.technical.recommended.forEach(s => recommendedSet.add(s));
+    }
+    if (career.tools?.recommended) {
+        career.tools.recommended.forEach(s => recommendedSet.add(s));
+    }
+
+    const recommended = Array.from(recommendedSet).filter(s => !userSkillsLower.includes(s.toLowerCase()));
+
     return {
-        missing: [],
-        recommended: []
+        missing,
+        recommended
     };
 };
