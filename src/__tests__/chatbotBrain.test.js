@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { updateContext, getContext, resetContext, extractDomain, processMessage } from '../services/chatbotBrain';
+import { updateContext, getContext, resetContext, extractDomain, processMessage, formatGitHubAnalysis } from '../services/chatbotBrain';
 
 describe('chatbotBrain Context Management', () => {
     beforeEach(() => {
@@ -89,5 +89,88 @@ describe('chatbotBrain processMessage', () => {
     it('returns fallback for empty message', () => {
         const response = processMessage('   ');
         expect(response).toContain('I didn\'t get that. Could you say something?');
+    });
+});
+
+describe('chatbotBrain formatGitHubAnalysis', () => {
+    it('formats a complete analysis correctly', () => {
+        const mockAnalysis = {
+            repoCount: 15,
+            totalStars: 42,
+            totalForks: 10,
+            languages: [
+                ['JavaScript', 8],
+                ['Python', 4],
+                ['HTML', 3]
+            ],
+            domainScores: [
+                ['Frontend Developer', 11],
+                ['Backend Developer', 8],
+                ['Data Scientist', 4]
+            ],
+            primaryDomain: 'Frontend Developer',
+            skillGaps: ['React', 'TypeScript', 'CSS'],
+            topics: ['react', 'web', 'api', 'machine-learning']
+        };
+
+        const result = formatGitHubAnalysis(mockAnalysis, 'testuser');
+
+        // Check header and stats
+        expect(result).toContain('## 🐙 GitHub Analysis — @testuser');
+        expect(result).toContain('| **Repositories** | 15 |');
+        expect(result).toContain('| **Total Stars** | ⭐ 42 |');
+        expect(result).toContain('| **Total Forks** | 🔱 10 |');
+
+        // Check languages (should have bars based on maxCount = 8)
+        expect(result).toContain('| **JavaScript** | 8 | █████ |');
+        // 4/8 * 5 = 2.5 -> ceil(2.5) = 3
+        expect(result).toContain('| **Python** | 4 | ███ |');
+        // 3/8 * 5 = 1.875 -> ceil(1.875) = 2
+        expect(result).toContain('| **HTML** | 3 | ██ |');
+
+        // Check career match
+        expect(result).toContain('### 🎯 Career Match');
+        // 11/15 = 73% -> ceil(73/20) = 4 blocks
+        expect(result).toContain('| **Frontend Developer** | 🟩🟩🟩🟩 73% |');
+        // 8/15 = 53% -> ceil(53/20) = 3 blocks
+        expect(result).toContain('| **Backend Developer** | 🟩🟩🟩 53% |');
+
+        // Check skill gaps
+        expect(result).toContain('### ⚠️ Skill Gaps for Frontend Developer');
+        expect(result).toContain('You should learn: **React, TypeScript, CSS**');
+
+        // Check topics
+        expect(result).toContain('### 🏷️ Topics');
+        expect(result).toContain('react, web, api, machine-learning');
+    });
+
+    it('handles empty/minimal analysis without crashing', () => {
+        const minimalAnalysis = {
+            repoCount: 0,
+            totalStars: 0,
+            totalForks: 0,
+            languages: [],
+            domainScores: [],
+            primaryDomain: null,
+            skillGaps: [],
+            topics: []
+        };
+
+        const result = formatGitHubAnalysis(minimalAnalysis, 'newbie');
+
+        // Check header and stats
+        expect(result).toContain('## 🐙 GitHub Analysis — @newbie');
+        expect(result).toContain('| **Repositories** | 0 |');
+        expect(result).toContain('| **Total Stars** | ⭐ 0 |');
+        expect(result).toContain('| **Total Forks** | 🔱 0 |');
+
+        // Check optional sections are omitted
+        expect(result).not.toContain('### 🎯 Career Match');
+        expect(result).not.toContain('### ⚠️ Skill Gaps');
+        expect(result).not.toContain('### 🏷️ Topics');
+
+        // Check languages is handled safely (empty list)
+        expect(result).toContain('### 💻 Languages Used');
+        expect(result).toContain('| Language | Repos | Strength |');
     });
 });
