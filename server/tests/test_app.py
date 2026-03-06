@@ -32,3 +32,78 @@ def test_predict_returns_200_and_predictions():
     # Backend Developer or Data Scientist should likely be top.
     print(f"Top prediction: {p['career']} ({p['prob']})")
     assert p['career'] in ['Data Scientist', 'Backend Developer']
+
+import pytest
+from unittest.mock import patch, mock_open
+
+def test_visitor_count_no_file(monkeypatch):
+    import app as app_module
+    monkeypatch.setattr(app_module, 'VISITOR_FILE', '/nonexistent/visitor_count.txt')
+    # Use mock to prevent actual file write
+    with patch("builtins.open", mock_open()) as mock_file:
+        res = client.get('/visitor-count')
+        assert res.status_code == 200
+        assert res.json() == {'count': 1}
+        mock_file.assert_called_with('/nonexistent/visitor_count.txt', 'w')
+        mock_file().write.assert_called_with('1')
+
+def test_visitor_count_existing_file(monkeypatch):
+    import app as app_module
+    monkeypatch.setattr(app_module, 'VISITOR_FILE', '/fake/visitor_count.txt')
+    # Mock os.path.exists to return True
+    with patch('os.path.exists', return_value=True):
+        # Mock open for both read and write
+        m = mock_open(read_data='5')
+        with patch('builtins.open', m):
+            res = client.get('/visitor-count')
+            assert res.status_code == 200
+            assert res.json() == {'count': 6}
+            # First open is for read
+            m.assert_any_call('/fake/visitor_count.txt', 'r')
+            # Second open is for write
+            m.assert_any_call('/fake/visitor_count.txt', 'w')
+            m().write.assert_called_with('6')
+
+def test_visitor_count_empty_file(monkeypatch):
+    import app as app_module
+    monkeypatch.setattr(app_module, 'VISITOR_FILE', '/fake/visitor_count.txt')
+    with patch('os.path.exists', return_value=True):
+        m = mock_open(read_data='')
+        with patch('builtins.open', m):
+            res = client.get('/visitor-count')
+            assert res.status_code == 200
+            assert res.json() == {'count': 1}
+
+def test_visitor_count_invalid_file_content(monkeypatch):
+    import app as app_module
+    monkeypatch.setattr(app_module, 'VISITOR_FILE', '/fake/visitor_count.txt')
+    with patch('os.path.exists', return_value=True):
+        m = mock_open(read_data='abc')
+        with patch('builtins.open', m):
+            res = client.get('/visitor-count')
+            assert res.status_code == 200
+            assert res.json() == {'count': 1}
+
+def test_visitor_count_read_exception(monkeypatch):
+    import app as app_module
+    monkeypatch.setattr(app_module, 'VISITOR_FILE', '/fake/visitor_count.txt')
+    with patch('os.path.exists', return_value=True):
+        m = mock_open()
+        m.side_effect = [Exception("Read error"), m.return_value] # First call raises, second call (write) works
+        with patch('builtins.open', m):
+            res = client.get('/visitor-count')
+            assert res.status_code == 200
+            assert res.json() == {'count': 1}
+
+def test_visitor_count_write_exception(monkeypatch):
+    import app as app_module
+    monkeypatch.setattr(app_module, 'VISITOR_FILE', '/fake/visitor_count.txt')
+    with patch('os.path.exists', return_value=True):
+        m = mock_open(read_data='10')
+        # Setup mock so write raises an exception
+        m().write.side_effect = Exception("Write error")
+        with patch('builtins.open', m):
+            res = client.get('/visitor-count')
+            assert res.status_code == 200
+            # Even if write fails, it should return the incremented count
+            assert res.json() == {'count': 11}
