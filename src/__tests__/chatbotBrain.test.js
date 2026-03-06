@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { updateContext, getContext, resetContext, extractDomain, processMessage } from '../services/chatbotBrain';
+import { updateContext, getContext, resetContext, extractDomain, processMessage, analyzeGitHubRepos } from '../services/chatbotBrain';
 
 describe('chatbotBrain Context Management', () => {
     beforeEach(() => {
@@ -89,5 +89,99 @@ describe('chatbotBrain processMessage', () => {
     it('returns fallback for empty message', () => {
         const response = processMessage('   ');
         expect(response).toContain('I didn\'t get that. Could you say something?');
+    });
+});
+
+describe('chatbotBrain analyzeGitHubRepos', () => {
+    it('handles empty repos array', () => {
+        const result = analyzeGitHubRepos([]);
+        expect(result).toEqual({
+            repoCount: 0,
+            languages: [],
+            totalStars: 0,
+            totalForks: 0,
+            topics: [],
+            domainScores: [],
+            primaryDomain: null,
+            skillGaps: []
+        });
+    });
+
+    it('accumulates language counts, topics, stars, and forks', () => {
+        const repos = [
+            { language: 'JavaScript', stargazers_count: 5, forks_count: 2, topics: ['react', 'frontend'] },
+            { language: 'JavaScript', stargazers_count: 3, forks_count: 1, topics: ['react'] },
+            { language: 'HTML', stargazers_count: 1, forks_count: 0, topics: ['web'] }
+        ];
+        const result = analyzeGitHubRepos(repos);
+        expect(result.repoCount).toBe(3);
+        expect(result.totalStars).toBe(9);
+        expect(result.totalForks).toBe(3);
+
+        // Sorting means JavaScript (count 2) should be first
+        expect(result.languages).toEqual([
+            ['JavaScript', 2],
+            ['HTML', 1]
+        ]);
+
+        // Topics should be unique and array spread
+        expect(result.topics).toEqual(expect.arrayContaining(['react', 'frontend', 'web']));
+        expect(result.topics.length).toBe(3);
+    });
+
+    it('correctly identifies primary domain', () => {
+        const repos = [
+            { language: 'Python', stargazers_count: 10 },
+            { language: 'Python', stargazers_count: 5 },
+            { language: 'Jupyter Notebook', stargazers_count: 2 },
+            { language: 'JavaScript', stargazers_count: 1 }
+        ];
+        const result = analyzeGitHubRepos(repos);
+
+        // Python and Jupyter Notebook map heavily to Data Scientist/AI/ML
+        // Based on LANGUAGE_TO_DOMAIN mapping in chatbotBrain.js:
+        // Python: 'Backend Developer', 'Data Scientist', 'AI/ML Engineer', 'Data Analyst' (count 2)
+        // Jupyter Notebook: 'Data Scientist', 'AI/ML Engineer', 'Data Analyst' (count 1)
+        // Total for Data Scientist/AI/ML = 3.
+        expect(['Data Scientist', 'AI/ML Engineer', 'Data Analyst']).toContain(result.primaryDomain);
+    });
+
+    it('handles missing data in repo objects gracefully', () => {
+        const repos = [
+            {}, // No language, stars, forks, or topics
+            { stargazers_count: null, forks_count: undefined, topics: null } // Explicit null/undefined
+        ];
+        const result = analyzeGitHubRepos(repos);
+        expect(result.repoCount).toBe(2);
+        expect(result.languages).toEqual([]);
+        expect(result.totalStars).toBe(0);
+        expect(result.totalForks).toBe(0);
+        expect(result.topics).toEqual([]);
+        expect(result.domainScores).toEqual([]);
+        expect(result.primaryDomain).toBeNull();
+        expect(result.skillGaps).toEqual([]);
+    });
+
+    it('calculates skill gaps correctly based on primary domain', () => {
+        // Let's create a user heavily skewed towards 'Backend Developer' using 'Java'
+        const repos = [
+            { language: 'Java', topics: ['spring'] },
+            { language: 'Java', topics: ['backend'] }
+        ];
+
+        const result = analyzeGitHubRepos(repos);
+        expect(result.primaryDomain).toBe('Backend Developer');
+
+        // Essential skills for Backend Developer from careerSkills.js:
+        // ['JavaScript', 'Node.js', 'Python', 'Java', 'SQL', 'REST API', 'Git', 'Database Design']
+        // We provided 'Java' and some topics. The user lacks JavaScript, Node.js, Python, SQL, etc.
+        expect(result.skillGaps.length).toBeGreaterThan(0);
+
+        // Ensure Java is NOT in the skill gap because they have it
+        const lowerGaps = result.skillGaps.map(g => g.toLowerCase());
+        expect(lowerGaps).not.toContain('java');
+
+        // They should have other essential skills in the gap
+        expect(lowerGaps).toEqual(expect.arrayContaining(['javascript', 'sql']));
     });
 });
