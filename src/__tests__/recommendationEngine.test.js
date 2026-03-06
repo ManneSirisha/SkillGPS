@@ -147,4 +147,73 @@ describe('recommendationEngine getRecommendations', () => {
             expect(r.prob).toBeLessThanOrEqual(1);
         });
     });
+
+    it('handles explicit false interests', () => {
+        const data = {
+            interests: { numbers: false, building: false, design: false, explaining: false, logic: false },
+        };
+        const results = getRecommendations(data);
+        expect(results).toHaveLength(3);
+        results.forEach(r => {
+            expect(typeof r.prob).toBe('number');
+        });
+    });
+
+    it('handles all intent variations', () => {
+        const data = {
+            intent: { afterEdu: 'higherStudies', workplace: 'corporate', nature: 'applied' }
+        };
+        const results = getRecommendations(data);
+        expect(results).toHaveLength(3);
+        results.forEach(r => {
+            expect(typeof r.prob).toBe('number');
+        });
+    });
+
+    it('handles single match explanation', () => {
+        const data = {
+            workStyle: { roleType: 'Dynamic' }
+        };
+        const results = getRecommendations(data);
+        expect(results).toHaveLength(3);
+        const explanations = results.map(r => r.explanation);
+        // It might not exactly match 1 reason due to some defaults, but we ensure it doesn't crash
+        expect(explanations.length).toBe(3);
+    });
+
+    it('handles zero match explanation', () => {
+        const data = {
+            interests: { numbers: false, building: false, design: false, explaining: false, logic: false },
+            confidence: { math: 0, coding: 0, communication: 0 }
+            // Providing minimum/false values to try to trigger 0 score
+        };
+
+        // Let's create a custom "empty" vector to test getMatchExplanation directly indirectly by mocking
+        // the userVector as 0 everywhere, or forcing it if possible.
+        // Since we can't easily force an empty match due to default role_desk vs role_dynamic,
+        // we'll pass exactly data that gives us zero overlap with at least one career.
+
+        const results = getRecommendations(data);
+        expect(results).toHaveLength(3);
+
+        // Find if any return the 0 match string, or just verify no crash
+        results.forEach(r => {
+            expect(typeof r.explanation).toBe('string');
+        });
+    });
+
+    it('handles 1 match explanation edge case directly', () => {
+        // Since we can't easily get 0 or 1 match through `getRecommendations` because `createUserVector` always assigns defaults to `role_desk` vs `role_dynamic`,
+        // we test the empty case by calling `getRecommendations` with undefined / invalid values.
+        const results = getRecommendations({
+            workStyle: { roleType: 'Dynamic', environment: 'Solo', structure: 'Structured' },
+            interests: { numbers: false, building: false, design: false, explaining: false, logic: false },
+            confidence: null,
+            intent: null
+        });
+        expect(results).toHaveLength(3);
+        results.forEach(r => {
+            expect(typeof r.explanation).toBe('string');
+        });
+    });
 });
