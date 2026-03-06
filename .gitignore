@@ -25,3 +25,4 @@ dist-ssr
 *.joblib
 __pycache__/
 *.pyc
+.coverage
