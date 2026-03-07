@@ -8,7 +8,7 @@ const IntentStep = ({ data, updateData, onNext, onBack }) => {
 
     const intent = data.intent || {};
 
-    const Option = ({ field, value, label }) => (
+    const renderOption = (field, value, label) => (
         <button
             onClick={() => handleChange(field, value)}
             style={{
@@ -38,20 +38,20 @@ const IntentStep = ({ data, updateData, onNext, onBack }) => {
         >
             <div style={{ marginBottom: '32px' }}>
                 <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-main)' }}>After Current Education</label>
-                <Option field="afterEdu" value="job" label="Get a Job" />
-                <Option field="afterEdu" value="higherStudies" label="Higher Studies" />
+                {renderOption("afterEdu", "job", "Get a Job")}
+                {renderOption("afterEdu", "higherStudies", "Higher Studies")}
             </div>
 
             <div style={{ marginBottom: '32px' }}>
                 <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-main)' }}>Workplace Preference</label>
-                <Option field="workplace" value="startup" label="Startup (Fast-paced, wearing multiple hats)" />
-                <Option field="workplace" value="corporate" label="Corporate (Structured, specialized roles)" />
+                {renderOption("workplace", "startup", "Startup (Fast-paced, wearing multiple hats)")}
+                {renderOption("workplace", "corporate", "Corporate (Structured, specialized roles)")}
             </div>
 
             <div>
                 <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-main)' }}>Nature of Work</label>
-                <Option field="nature" value="research" label="Research & Development" />
-                <Option field="nature" value="applied" label="Applied Engineering / Product" />
+                {renderOption("nature", "research", "Research & Development")}
+                {renderOption("nature", "applied", "Applied Engineering / Product")}
             </div>
         </StepWrapper>
     );

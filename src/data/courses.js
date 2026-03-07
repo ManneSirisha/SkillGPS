@@ -37,13 +37,25 @@ export const courses = {
     'Backend Developer': {
         beginner: [
             { type: 'free', title: 'Node.js Basics', platform: 'Udemy', duration: '15h', rating: 4.7, outcome: 'Express, REST APIs', link: 'https://www.udemy.com/course/the-complete-nodejs-developer-course-2/' },
-            { type: 'free', title: 'Database Design', platform: 'Coursera', duration: '20h', rating: 4.5, outcome: 'SQL, NoSQL, Schema Design', link: 'https://www.coursera.org/learn/database-management' }
+            { type: 'free', title: 'Database Design', platform: 'Coursera', duration: '20h', rating: 4.5, outcome: 'SQL, NoSQL, Schema Design', link: 'https://www.coursera.org/learn/database-management' },
+            { type: 'free', title: 'Back End Development and APIs', platform: 'freeCodeCamp', duration: '300h', rating: 4.9, outcome: 'Node.js, MongoDB', link: 'https://www.freecodecamp.org/learn/back-end-development-and-apis/' },
+            { type: 'free', title: 'MDN Web Docs - Server-side', platform: 'MDN', duration: 'Varies', rating: 4.8, outcome: 'Web Server Basics', link: 'https://developer.mozilla.org/en-US/docs/Learn/Server-side' },
+            { type: 'paid', title: 'IBM Full Stack Software Developer', platform: 'Coursera', duration: '11 months', rating: 4.6, outcome: 'Cloud Native Dev', link: 'https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer' },
+            { type: 'paid', title: 'Meta Back-End Developer', platform: 'Coursera', duration: '8 months', rating: 4.7, outcome: 'Python, Django, APIs', link: 'https://www.coursera.org/professional-certificates/meta-back-end-developer' }
         ],
         intermediate: [
-            { type: 'free', title: 'Advanced Backend Architecture', platform: 'Udacity', duration: '35h', rating: 4.8, outcome: 'Microservices, Caching, Queues', link: 'https://www.udacity.com/course/cloud-native-application-architecture-nanodegree--nd063' }
+            { type: 'free', title: 'Advanced Backend Architecture', platform: 'Udacity', duration: '35h', rating: 4.8, outcome: 'Microservices, Caching, Queues', link: 'https://www.udacity.com/course/cloud-native-application-architecture-nanodegree--nd063' },
+            { type: 'free', title: 'Java Programming', platform: 'Great Learning', duration: 'Varies', rating: 4.5, outcome: 'Java Foundations', link: 'https://www.mygreatlearning.com/academy/learn-for-free/courses/java-programming' },
+            { type: 'free', title: 'Dive Into Back-End Engineering', platform: 'CodeSignal', duration: '15h', rating: 4.8, outcome: 'Express.js Mastery', link: 'https://codesignal.com/learn/' },
+            { type: 'paid', title: 'The Complete Node.js Developer Course', platform: 'Udemy', duration: '35h', rating: 4.7, outcome: 'Node, Express, MongoDB', link: 'https://www.udemy.com/course/the-complete-nodejs-developer-course-2/' },
+            { type: 'paid', title: 'Spring Boot 3, Spring 6 & Hibernate', platform: 'Udemy', duration: '38h', rating: 4.6, outcome: 'Java Spring Mastery', link: 'https://www.udemy.com/course/spring-hibernate-tutorial/' }
         ],
         advanced: [
-            { type: 'free', title: 'System Design Interview', platform: 'Udemy', duration: '20h', rating: 4.9, outcome: 'Scalability, Load Balancing', link: 'https://www.udemy.com/course/system-design-interview-prep/' }
+            { type: 'free', title: 'System Design Interview', platform: 'Udemy', duration: '20h', rating: 4.9, outcome: 'Scalability, Load Balancing', link: 'https://www.udemy.com/course/system-design-interview-prep/' },
+            { type: 'free', title: 'The System Design Primer', platform: 'GitHub (donnemartin)', duration: 'Varies', rating: 4.9, outcome: 'Scalable Systems', link: 'https://github.com/donnemartin/system-design-primer' },
+            { type: 'free', title: 'High Scalability', platform: 'HighScalability.com', duration: 'Varies', rating: 4.8, outcome: 'Real-world Architecture', link: 'http://highscalability.com/' },
+            { type: 'paid', title: 'Cloud Developer Nanodegree', platform: 'Udacity', duration: '4 months', rating: 4.7, outcome: 'Cloud Native Apps', link: 'https://www.udacity.com/course/cloud-developer-nanodegree--nd9990' },
+            { type: 'paid', title: 'Software Engineering Career Track', platform: 'Springboard', duration: '9 months', rating: 4.8, outcome: 'Full Stack Mastery', link: 'https://www.springboard.com/workshops/software-engineering-career-track/' }
         ]
     },
     'AI/ML Engineer': {
@@ -219,26 +231,6 @@ export const courses = {
             { type: 'paid', title: 'SAS Academy Business Analyst', platform: 'SAS', duration: 'Varies', rating: 4.7, outcome: 'SAS Viya, Analytics', link: 'https://www.sas.com/en_us/training/academy-data-science/business-analyst-certification.html' },
             { type: 'paid', title: 'Business Analytics', platform: 'Harvard Business School', duration: 'Varies', rating: 4.9, outcome: 'Data Interpretation', link: 'https://pll.harvard.edu/subject/business-analysis' },
             { type: 'paid', title: 'Business Analytics Online', platform: 'Columbia Business School', duration: 'Varies', rating: 4.8, outcome: 'Strategic Tools', link: 'https://execed.business.columbia.edu/programs/business-analytics-online' }
-        ]
-    },
-    'Backend Developer': {
-        beginner: [
-            { type: 'free', title: 'Back End Development and APIs', platform: 'freeCodeCamp', duration: '300h', rating: 4.9, outcome: 'Node.js, MongoDB', link: 'https://www.freecodecamp.org/learn/back-end-development-and-apis/' },
-            { type: 'free', title: 'MDN Web Docs - Server-side', platform: 'MDN', duration: 'Varies', rating: 4.8, outcome: 'Web Server Basics', link: 'https://developer.mozilla.org/en-US/docs/Learn/Server-side' },
-            { type: 'paid', title: 'IBM Full Stack Software Developer', platform: 'Coursera', duration: '11 months', rating: 4.6, outcome: 'Cloud Native Dev', link: 'https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer' },
-            { type: 'paid', title: 'Meta Back-End Developer', platform: 'Coursera', duration: '8 months', rating: 4.7, outcome: 'Python, Django, APIs', link: 'https://www.coursera.org/professional-certificates/meta-back-end-developer' }
-        ],
-        intermediate: [
-            { type: 'free', title: 'Java Programming', platform: 'Great Learning', duration: 'Varies', rating: 4.5, outcome: 'Java Foundations', link: 'https://www.mygreatlearning.com/academy/learn-for-free/courses/java-programming' },
-            { type: 'free', title: 'Dive Into Back-End Engineering', platform: 'CodeSignal', duration: '15h', rating: 4.8, outcome: 'Express.js Mastery', link: 'https://codesignal.com/learn/' },
-            { type: 'paid', title: 'The Complete Node.js Developer Course', platform: 'Udemy', duration: '35h', rating: 4.7, outcome: 'Node, Express, MongoDB', link: 'https://www.udemy.com/course/the-complete-nodejs-developer-course-2/' },
-            { type: 'paid', title: 'Spring Boot 3, Spring 6 & Hibernate', platform: 'Udemy', duration: '38h', rating: 4.6, outcome: 'Java Spring Mastery', link: 'https://www.udemy.com/course/spring-hibernate-tutorial/' }
-        ],
-        advanced: [
-            { type: 'free', title: 'The System Design Primer', platform: 'GitHub (donnemartin)', duration: 'Varies', rating: 4.9, outcome: 'Scalable Systems', link: 'https://github.com/donnemartin/system-design-primer' },
-            { type: 'free', title: 'High Scalability', platform: 'HighScalability.com', duration: 'Varies', rating: 4.8, outcome: 'Real-world Architecture', link: 'http://highscalability.com/' },
-            { type: 'paid', title: 'Cloud Developer Nanodegree', platform: 'Udacity', duration: '4 months', rating: 4.7, outcome: 'Cloud Native Apps', link: 'https://www.udacity.com/course/cloud-developer-nanodegree--nd9990' },
-            { type: 'paid', title: 'Software Engineering Career Track', platform: 'Springboard', duration: '9 months', rating: 4.8, outcome: 'Full Stack Mastery', link: 'https://www.springboard.com/workshops/software-engineering-career-track/' }
         ]
     },
     'Data Analyst': {

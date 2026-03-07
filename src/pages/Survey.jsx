@@ -20,24 +20,27 @@ const Survey = () => {
 
     const validateStep = () => {
         switch (step) {
-            case 1:
+            case 1: {
                 const { numbers, building, design, explaining, logic } = formData.interests || {};
                 if (numbers === undefined || building === undefined || design === undefined || explaining === undefined || logic === undefined) {
                     return false;
                 }
                 return true;
-            case 2:
+            }
+            case 2: {
                 const { environment, structure, roleType } = formData.workStyle || {};
                 if (!environment || !structure || !roleType) {
                     return false;
                 }
                 return true;
-            case 3:
+            }
+            case 3: {
                 const { afterEdu, workplace, nature } = formData.intent || {};
                 if (!afterEdu || !workplace || !nature) {
                     return false;
                 }
                 return true;
+            }
             default:
                 return true;
         }

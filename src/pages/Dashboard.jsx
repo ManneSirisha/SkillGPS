@@ -156,25 +156,6 @@ const Dashboard = () => {
     const location = useLocation();
     const selectedDomain = location.state?.selectedDomain || 'Data Scientist';
 
-    console.log('Dashboard: selectedDomain:', selectedDomain);
-    const domainCourses = courses[selectedDomain] || courses['default'];
-
-    if (!domainCourses) {
-        console.error('Dashboard: No domain courses found for', selectedDomain);
-        return <div className="container" style={{ paddingTop: '40px' }}>Error: Course data not found.</div>;
-    }
-
-    const allCourses = [
-        ...(domainCourses.beginner || []),
-        ...(domainCourses.intermediate || []),
-        ...(domainCourses.advanced || [])
-    ];
-
-    const allCoursesMap = allCourses.reduce((acc, course) => {
-        acc[course.title] = course;
-        return acc;
-    }, {});
-
     const [completedCourses, setCompletedCourses] = useState(() => {
         const saved = localStorage.getItem('completedCourses');
         return saved ? new Set(JSON.parse(saved)) : new Set();
@@ -188,18 +169,31 @@ const Dashboard = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [resumeData, setResumeData] = useState(() => {
+    const resumeData = (() => {
         const saved = localStorage.getItem('resumeData');
         return saved ? JSON.parse(saved) : null;
-    });
+    })();
 
-    const [skillsGap, setSkillsGap] = useState(null);
-    useEffect(() => {
+    const skillsGap = (() => {
         if (resumeData && selectedDomain) {
-            const result = matchSkills(resumeData.skills, selectedDomain);
-            setSkillsGap(result);
+            return matchSkills(resumeData.skills, selectedDomain);
         }
-    }, [resumeData, selectedDomain]);
+        return null;
+    })();
+
+    console.log('Dashboard: selectedDomain:', selectedDomain);
+    const domainCourses = courses[selectedDomain] || courses['default'];
+
+    const allCourses = domainCourses ? [
+        ...(domainCourses.beginner || []),
+        ...(domainCourses.intermediate || []),
+        ...(domainCourses.advanced || [])
+    ] : [];
+
+    const allCoursesMap = allCourses.reduce((acc, course) => {
+        acc[course.title] = course;
+        return acc;
+    }, {});
 
     useEffect(() => {
         const jsonStats = JSON.stringify([...completedCourses]);
@@ -214,13 +208,12 @@ const Dashboard = () => {
         }
     }, [completedCourses]);
 
-    useEffect(() => {
-        const updatedEnrolled = new Set([...enrolledCourses, ...completedCourses]);
-        if (updatedEnrolled.size !== enrolledCourses.size) {
-            setEnrolledCourses(updatedEnrolled);
-        }
+    const actualEnrolledCourses = new Set([...enrolledCourses, ...completedCourses]);
 
-        const jsonStats = JSON.stringify([...updatedEnrolled]);
+    if (actualEnrolledCourses.size !== enrolledCourses.size) {
+        setEnrolledCourses(actualEnrolledCourses);
+
+        const jsonStats = JSON.stringify([...actualEnrolledCourses]);
         localStorage.setItem('enrolledCourses', jsonStats);
 
         const userId = localStorage.getItem('userId');
@@ -230,7 +223,7 @@ const Dashboard = () => {
             userDb.enrolledCourses = jsonStats;
             localStorage.setItem(userDbKey, JSON.stringify(userDb));
         }
-    }, [enrolledCourses, completedCourses]);
+    }
 
     const toggleCourse = (title) => {
         setCompletedCourses(prev => {
@@ -253,6 +246,11 @@ const Dashboard = () => {
     };
 
     const progress = Math.round((completedCourses.size / allCourses.length) * 100) || 0;
+
+    if (!domainCourses) {
+        console.error('Dashboard: No domain courses found for', selectedDomain);
+        return <div className="container" style={{ paddingTop: '40px' }}>Error: Course data not found.</div>;
+    }
 
     return (
         <motion.div
@@ -310,7 +308,7 @@ const Dashboard = () => {
                             Retake Survey
                         </button>
                         <button className="dashboard-enrolled-btn" onClick={() => setIsModalOpen(true)}>
-                            {enrolledCourses.size} Courses Enrolled
+                            {actualEnrolledCourses.size} Courses Enrolled
                         </button>
                         <span className="dashboard-completed-text">
                             <span className="dashboard-completed-count">{completedCourses.size}</span> / {allCourses.length} Completed
@@ -391,7 +389,7 @@ const Dashboard = () => {
             <EnrolledModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                enrolledCourses={enrolledCourses}
+                enrolledCourses={actualEnrolledCourses}
                 completedCourses={completedCourses}
                 allCoursesMap={allCoursesMap}
             />

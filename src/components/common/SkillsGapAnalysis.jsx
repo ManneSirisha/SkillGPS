@@ -1,37 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, TrendingUp, BookOpen, ChevronDown, ChevronUp, Code, Sparkles } from 'lucide-react';
+import { CheckCircle, XCircle, TrendingUp, BookOpen, ChevronDown, ChevronUp, Code } from 'lucide-react';
 import { matchSkills, getSkillGapRecommendations, getReadinessAssessment, getProjectRecommendations } from '../../services/skillsMatcher';
 
 const SkillsGapAnalysis = ({ resumeData, career }) => {
-    const [matchResult, setMatchResult] = useState(null);
-    const [recommendations, setRecommendations] = useState([]);
-    const [readiness, setReadiness] = useState(null);
     const [expandedSkillIndex, setExpandedSkillIndex] = useState(null);
-    const [projectRecommendations, setProjectRecommendations] = useState(null);
     const [expandedProjectIndex, setExpandedProjectIndex] = useState(null);
 
-    useEffect(() => {
+    const computedData = (() => {
         if (resumeData && career) {
-            // Match skills
             const result = matchSkills(resumeData.skills, career);
-            setMatchResult(result);
-
-            // Get recommendations for missing skills
             const recs = getSkillGapRecommendations(result.essentialMissing, career);
-            setRecommendations(recs);
-
-            // Get readiness assessment
             const assessment = getReadinessAssessment(result);
-            setReadiness(assessment);
-
-            // Get project recommendations
             const projectRecs = getProjectRecommendations(result, resumeData.skills, career);
-            setProjectRecommendations(projectRecs);
+            return { result, recs, assessment, projectRecs };
         }
-    }, [resumeData, career]);
+        return null;
+    })();
 
-    if (!matchResult) {
+    const resultToUse = computedData?.result;
+    const recommendationsToUse = computedData?.recs;
+    const readinessToUse = computedData?.assessment;
+    const projectRecommendationsToUse = computedData?.projectRecs;
+
+
+    if (!resultToUse) {
         return null;
     }
 
@@ -58,24 +51,24 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
             </motion.div>
 
             {/* Readiness Card */}
-            {readiness && (
+            {readinessToUse && (
                 <motion.div
                     variants={cardVariants}
                     className="card"
                     style={{
                         padding: '24px',
                         marginBottom: '24px',
-                        background: `linear-gradient(135deg, ${readiness.color}15 0%, rgba(255,255,255,0.03) 100%)`,
-                        border: `1px solid ${readiness.color}50`
+                        background: `linear-gradient(135deg, ${readinessToUse.color}15 0%, rgba(255,255,255,0.03) 100%)`,
+                        border: `1px solid ${readinessToUse.color}50`
                     }}
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-                        <TrendingUp size={32} color={readiness.color} />
+                        <TrendingUp size={32} color={readinessToUse.color} />
                         <div>
                             <h3 style={{ fontSize: '1.3rem', margin: 0, marginBottom: '4px' }}>
-                                {readiness.level.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} Level
+                                {readinessToUse.level.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} Level
                             </h3>
-                            <p style={{ color: 'var(--text-muted)', margin: 0 }}>{readiness.message}</p>
+                            <p style={{ color: 'var(--text-muted)', margin: 0 }}>{readinessToUse.message}</p>
                         </div>
                     </div>
 
@@ -84,11 +77,11 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
                                 Essential Skills Match
                             </div>
-                            <div style={{ fontSize: '2rem', fontWeight: '700', color: readiness.color }}>
-                                {matchResult.essentialMatchPercentage}%
+                            <div style={{ fontSize: '2rem', fontWeight: '700', color: readinessToUse.color }}>
+                                {resultToUse.essentialMatchPercentage}%
                             </div>
                             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                {matchResult.essentialMatched.length} of {matchResult.essentialMatched.length + matchResult.essentialMissing.length} essential skills
+                                {resultToUse.essentialMatched.length} of {resultToUse.essentialMatched.length + resultToUse.essentialMissing.length} essential skills
                             </div>
                         </div>
                         <div>
@@ -96,10 +89,10 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                                 Overall Skills Match
                             </div>
                             <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary)' }}>
-                                {matchResult.matchPercentage}%
+                                {resultToUse.matchPercentage}%
                             </div>
                             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                {matchResult.totalMatched} of {matchResult.totalRequired} total skills
+                                {resultToUse.totalMatched} of {resultToUse.totalRequired} total skills
                             </div>
                         </div>
                     </div>
@@ -115,12 +108,12 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                         <h3 style={{ fontSize: '1.3rem', margin: 0 }}>Skills You Have</h3>
                     </div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
-                        {matchResult.matchedSkills.length} matching skills found
+                        {resultToUse.matchedSkills.length} matching skills found
                     </p>
                     <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                        {matchResult.matchedSkills.length > 0 ? (
+                        {resultToUse.matchedSkills.length > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {matchResult.matchedSkills.map((skill, index) => (
+                                {resultToUse.matchedSkills.map((skill, index) => (
                                     <motion.div
                                         key={index}
                                         initial={{ opacity: 0, x: -10 }}
@@ -154,12 +147,12 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                         <h3 style={{ fontSize: '1.3rem', margin: 0 }}>Essential Skills to Acquire</h3>
                     </div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
-                        {matchResult.essentialMissing.length} essential skills needed
+                        {resultToUse.essentialMissing.length} essential skills needed
                     </p>
                     <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                        {matchResult.essentialMissing.length > 0 ? (
+                        {resultToUse.essentialMissing.length > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {matchResult.essentialMissing.map((skill, index) => (
+                                {resultToUse.essentialMissing.map((skill, index) => (
                                     <motion.div
                                         key={index}
                                         initial={{ opacity: 0, x: -10 }}
@@ -198,7 +191,7 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
             </div>
 
             {/* Course Recommendations */}
-            {recommendations.length > 0 && (
+            {recommendationsToUse.length > 0 && (
                 <motion.div variants={cardVariants}>
                     <h3 style={{ fontSize: '1.5rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <BookOpen size={28} color="var(--primary)" />
@@ -209,7 +202,7 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {recommendations.map((rec, index) => (
+                        {recommendationsToUse.map((rec, index) => (
                             <motion.div
                                 key={index}
                                 className="card"
@@ -308,7 +301,7 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
             )}
 
             {/* Project Recommendations */}
-            {projectRecommendations && (projectRecommendations.beginner?.length > 0 || projectRecommendations.intermediate?.length > 0 || projectRecommendations.advanced?.length > 0) && (
+            {projectRecommendationsToUse && (projectRecommendationsToUse.beginner?.length > 0 || projectRecommendationsToUse.intermediate?.length > 0 || projectRecommendationsToUse.advanced?.length > 0) && (
                 <motion.div variants={cardVariants} style={{ marginTop: '48px' }}>
                     <h3 style={{ fontSize: '1.5rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <Code size={28} color="var(--primary)" />
@@ -318,11 +311,11 @@ const SkillsGapAnalysis = ({ resumeData, career }) => {
                         Build these projects to acquire missing skills and strengthen your portfolio
                     </p>
 
-                    {projectRecommendations.beginner?.length > 0 && (
+                    {projectRecommendationsToUse.beginner?.length > 0 && (
                         <div style={{ marginBottom: '32px' }}>
                             <h4 style={{ fontSize: '1.2rem', marginBottom: '16px', color: '#10b981' }}>🟢 Beginner Projects</h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                {projectRecommendations.beginner.map((project, index) => (
+                                {projectRecommendationsToUse.beginner.map((project, index) => (
                                     <motion.div key={index} className="card" style={{ padding: '20px', cursor: 'pointer' }} onClick={() => setExpandedProjectIndex(expandedProjectIndex === `beginner-${index}` ? null : `beginner-${index}`)}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                             <div>
