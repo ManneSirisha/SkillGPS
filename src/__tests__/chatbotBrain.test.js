@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { updateContext, getContext, resetContext, extractDomain, processMessage } from '../services/chatbotBrain';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { updateContext, getContext, resetContext, extractDomain, processMessage, generateICSFile } from '../services/chatbotBrain';
 
 describe('chatbotBrain Context Management', () => {
     beforeEach(() => {
@@ -89,5 +89,41 @@ describe('chatbotBrain processMessage', () => {
     it('returns fallback for empty message', () => {
         const response = processMessage('   ');
         expect(response).toContain('I didn\'t get that. Could you say something?');
+    });
+});
+
+describe('chatbotBrain generateICSFile', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('returns null for unknown domain', () => {
+        expect(generateICSFile('Unknown Domain')).toBeNull();
+    });
+
+    it('generates deterministic ICS file for a known domain', () => {
+        // Set date to 2024-01-03T12:00:00.000Z (A Wednesday)
+        const mockDate = new Date('2024-01-03T12:00:00Z');
+        vi.setSystemTime(mockDate);
+
+        const ics = generateICSFile('Data Scientist');
+
+        // Basic structure
+        expect(ics).toContain('BEGIN:VCALENDAR');
+        expect(ics).toContain('VERSION:2.0');
+        expect(ics).toContain('END:VCALENDAR');
+
+        // Check if it contains the skills
+        expect(ics).toContain('SUMMARY:SkillGPS: Data Scientist — Learn Python');
+        expect(ics).toContain('SUMMARY:SkillGPS: Data Scientist — Learn SQL');
+        expect(ics).toContain('SUMMARY:SkillGPS: Data Scientist — Learn R'); // Recommended[0]
+
+        // Check number of events (8 weeks * 5 days = 40 events)
+        const eventCount = (ics.match(/BEGIN:VEVENT/g) || []).length;
+        expect(eventCount).toBe(40);
     });
 });
