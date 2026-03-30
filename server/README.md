@@ -1,4 +1,4 @@
-# CareerGPS Inference API
+# SkillGPS Inference API
 
 Simple FastAPI server that loads the trained model and serves `/predict`.
 
